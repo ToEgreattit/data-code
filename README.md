@@ -28,3 +28,11 @@ Expected spring temperatures according to the RCP 8.5 climate scenario, during t
 * "output_IPM.txt"
 
 Annual age-specific population size and vital rates (survival and recruitment) estimated with an integrated population model (IPM, see Gamelon et al. 2016 Ecology for a full description and the code) between 1985 and 2020 in the studied great tit population.
+
+* "Variance survival.txt"
+
+Annual age-specific variance in survival (logit-scale) estimated with an integrated population model (IPM, see Gamelon et al. 2016 Ecology for a full description and the code) between 1985 and 2020 in the studied great tit population.
+
+* "Variance recruitment.txt"
+
+Annual age-specific variance in recruitment (log-scale) estimated with an integrated population model (IPM, see Gamelon et al. 2016 Ecology for a full description and the code) between 1985 and 2020 in the studied great tit population.
