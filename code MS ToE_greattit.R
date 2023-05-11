@@ -69,6 +69,15 @@ ToE<- function (low_threshold)
 } 
 ToE(mean(yhL)) 
 
+abline(h=mean(yhL), lty=1, col=1)
+abline(v=1921, lty=2)
+abline(v=1950, lty=2)
+abline(v=2068, lty=1, lwd=2, col=2)
+
+### Check no temporal trend in the historical period
+years<- 1921:1950
+reg<-lm(LDest[1:30,4]~years)
+summary(reg)
 
 # Project food peak under the RCP 8.5 scenario -------------------------
 
@@ -137,6 +146,10 @@ ToE<- function (low_threshoFP)
 } 
 ToE(mean(yhL)) 
 
+### Check no temporal trend in the historical period
+years<- 1921:1950
+reg<-lm(FPest[1:30,4]~years)
+summary(reg)
 
 
 # Project mismatch under the RCP 8.5 scenario -------------------------
@@ -185,6 +198,10 @@ ToE<- function (low_threshomism)
 } 
 ToE(mean(yhL)) 
 
+### Check no temporal trend in the historical period
+years<- 1921:1950
+reg<-lm(mismest[1:30,4]~years)
+summary(reg)
 
 # Simulate projections of BCI in the future -------------------------------
 
@@ -264,8 +281,8 @@ maxY <- 2019
 yearsn <- minY:maxY
 
 
-survie.all.ages <- cbind(rep(yearsn,4), c(rep(1,length(yearsn)), rep(2,length(yearsn)),rep(3,length(yearsn)),rep(4,length(yearsn))),c(logit(survi1[13:47,2]),logit(survi2[13:47,2]),logit(survi3[13:47,3]),logit(survi4[13:47,2])),c(log(fec1[13:47,2]),log(fec2[13:47,2]),log(fec3[13:47,2]),log(fec4[13:47,2])),c(Nt[13:47,2] -  localN1[13:47,2] - localN2[13:47,2] - localN3[13:47,2] - localN4[13:47,2]),c(localN1[13:47,2] + localN2[13:47,2] + localN3[13:47,2] + localN4[13:47,2]), rep(dd_red_red[,1],4),rep(Nt[13:47,2]),rep(mismatchok,4),rep(dd_red_red_before[,1],4))  
-colnames(survie.all.ages)<-c("year","age","survival","recrut","immi","Nlocal","BCI","Ntotal","Mismatch", "BCIbefore") 
+survie.all.ages <- cbind(rep(yearsn,4), c(rep(1,length(yearsn)), rep(2,length(yearsn)),rep(3,length(yearsn)),rep(4,length(yearsn))),c(logit(survi1[13:47,2]),logit(survi2[13:47,2]),logit(survi3[13:47,3]),logit(survi4[13:47,2])),c(log(fec1[13:47,2]),log(fec2[13:47,2]),log(fec3[13:47,2]),log(fec4[13:47,2])),c(Nt[13:47,2] -  localN1[13:47,2] - localN2[13:47,2] - localN3[13:47,2] - localN4[13:47,2]),c(localN1[13:47,2] + localN2[13:47,2] + localN3[13:47,2] + localN4[13:47,2]), rep(dd_red_red[,1],4),rep(Nt[13:47,2]),rep(mismatchok,4),rep(dd_red_red_before[,1],4), c(survi1[13:47,4],survi2[13:47,4],survi3[13:47,4],survi4[13:47,4]),c(fec1[13:47,4],fec2[13:47,4],fec3[13:47,4],fec4[13:47,4]))  
+colnames(survie.all.ages)<-c("year","age","survival","recrut","immi","Nlocal","BCI","Ntotal","Mismatch", "BCIbefore","var_surv","var_fec") 
 row.names(survie.all.ages)<-c()
 survie.all.ages<-as.data.frame(survie.all.ages)
 A<-as.factor(survie.all.ages$age)
@@ -280,7 +297,8 @@ MISM<-rep(MISM,4)
 year<-as.factor(survie.all.ages$year)
 Nl<-survie.all.ages$Nlocal[1:length(yearsn)]
 Nl<-Nl
-
+var_surv<-survie.all.ages$var_surv
+var_fec<-survie.all.ages$var_fec
 
 
 data=survie.all.ages
@@ -292,13 +310,13 @@ data$A <- A
 
 
 
-## Survival  
-reg.S<- lme(survival ~ A + BEECH  + BEECH:A, data=data, random= ~ 1|year, method="REML", na.action=na.exclude)
+## Survival with weights
+reg.S<- lme(survival ~ A + BEECH  + BEECH:A, data=data, random= ~ 1|year, method="REML", weights=~var_surv, na.action=na.exclude)
+summary(reg.S)
 
-
-
-## Recruitment  
-reg.R<-lme(recrut ~ A + N + N:A + BEECH  + BEECH:A, data=data, random= ~ 1|year, method="REML", na.action=na.exclude)
+## Fec with weights
+reg.R<-lme(recrut ~ A + N + N:A + BEECH  + BEECH:A, data=data, random= ~ 1|year, method="REML", weights=~var_fec, na.action=na.exclude)
+summary(reg.R)
 
 
 
@@ -473,6 +491,11 @@ ToE<- function (low_threshold)
 } 
 ToE(mean(yhL)) 
 
+### Check no temporal trend in the historical period
+years<- 1922:1950
+reg<-lm(Nest[2:30,4]~years)
+summary(reg)
+
 
 ################################# scenario 2: increasing frequency of good years
 
@@ -505,8 +528,8 @@ maxY <- 2019
 yearsn <- minY:maxY
 
 
-survie.all.ages <- cbind(rep(yearsn,4), c(rep(1,length(yearsn)), rep(2,length(yearsn)),rep(3,length(yearsn)),rep(4,length(yearsn))),c(logit(survi1[13:47,2]),logit(survi2[13:47,2]),logit(survi3[13:47,3]),logit(survi4[13:47,2])),c(log(fec1[13:47,2]),log(fec2[13:47,2]),log(fec3[13:47,2]),log(fec4[13:47,2])),c(Nt[13:47,2] -  localN1[13:47,2] - localN2[13:47,2] - localN3[13:47,2] - localN4[13:47,2]),c(localN1[13:47,2] + localN2[13:47,2] + localN3[13:47,2] + localN4[13:47,2]), rep(dd_red_red[,1],4),rep(Nt[13:47,2]),rep(mismatchok,4),rep(dd_red_red_before[,1],4)) 
-colnames(survie.all.ages)<-c("year","age","survival","recrut","immi","Nlocal","BCI","Ntotal","Mismatch", "BCIbefore") 
+survie.all.ages <- cbind(rep(yearsn,4), c(rep(1,length(yearsn)), rep(2,length(yearsn)),rep(3,length(yearsn)),rep(4,length(yearsn))),c(logit(survi1[13:47,2]),logit(survi2[13:47,2]),logit(survi3[13:47,3]),logit(survi4[13:47,2])),c(log(fec1[13:47,2]),log(fec2[13:47,2]),log(fec3[13:47,2]),log(fec4[13:47,2])),c(Nt[13:47,2] -  localN1[13:47,2] - localN2[13:47,2] - localN3[13:47,2] - localN4[13:47,2]),c(localN1[13:47,2] + localN2[13:47,2] + localN3[13:47,2] + localN4[13:47,2]), rep(dd_red_red[,1],4),rep(Nt[13:47,2]),rep(mismatchok,4),rep(dd_red_red_before[,1],4), c(survi1[13:47,4],survi2[13:47,4],survi3[13:47,4],survi4[13:47,4]),c(fec1[13:47,4],fec2[13:47,4],fec3[13:47,4],fec4[13:47,4])) 
+colnames(survie.all.ages)<-c("year","age","survival","recrut","immi","Nlocal","BCI","Ntotal","Mismatch", "BCIbefore","var_surv","var_fec") 
 row.names(survie.all.ages)<-c()
 survie.all.ages<-as.data.frame(survie.all.ages)
 A<-as.factor(survie.all.ages$age)
@@ -521,7 +544,8 @@ MISM<-rep(MISM,4)
 year<-as.factor(survie.all.ages$year)
 Nl<-survie.all.ages$Nlocal[1:length(yearsn)]
 Nl<-Nl
-
+var_surv<-survie.all.ages$var_surv
+var_fec<-survie.all.ages$var_fec
 
 
 data=survie.all.ages
@@ -533,13 +557,13 @@ data$A <- A
 
 
 
-## Survival  
-reg.S<- lme(survival ~ A + BEECH  + BEECH:A, data=data, random= ~ 1|year, method="REML", na.action=na.exclude)
+## Survival with weights
+reg.S<- lme(survival ~ A + BEECH  + BEECH:A, data=data, random= ~ 1|year, method="REML", weights=~var_surv, na.action=na.exclude)
+summary(reg.S)
 
-
-
-## Recruitment  
-reg.R<-lme(recrut ~ A + N + N:A + BEECH  + BEECH:A, data=data, random= ~ 1|year, method="REML", na.action=na.exclude)
+## Fec with weights
+reg.R<-lme(recrut ~ A + N + N:A + BEECH  + BEECH:A, data=data, random= ~ 1|year, method="REML", weights=~var_fec, na.action=na.exclude)
+summary(reg.R)
 
 
 
@@ -700,7 +724,7 @@ ToE<- function (low_threshold)
   
   for (t in 1:length(yfH))
   {
-    if (yfH[t] > low_threshold) print (t) 
+    if (yfH[t] > low_threshold) print (t)                                                                                                                                                                                                                                                                                                                                                   
     else 
       print(NA) 
   }
@@ -965,8 +989,8 @@ maxY <- 2019
 yearsn <- minY:maxY
 
 
-survie.all.ages <- cbind(rep(yearsn,4), c(rep(1,length(yearsn)), rep(2,length(yearsn)),rep(3,length(yearsn)),rep(4,length(yearsn))),c(logit(survi1[13:47,2]),logit(survi2[13:47,2]),logit(survi3[13:47,3]),logit(survi4[13:47,2])),c(log(fec1[13:47,2]),log(fec2[13:47,2]),log(fec3[13:47,2]),log(fec4[13:47,2])),c(Nt[13:47,2] -  localN1[13:47,2] - localN2[13:47,2] - localN3[13:47,2] - localN4[13:47,2]),c(localN1[13:47,2] + localN2[13:47,2] + localN3[13:47,2] + localN4[13:47,2]), rep(dd_red_red[,1],4),rep(Nt[13:47,2]),rep(mismatchok,4),rep(dd_red_red_before[,1],4))  
-colnames(survie.all.ages)<-c("year","age","survival","recrut","immi","Nlocal","BCI","Ntotal","Mismatch", "BCIbefore") 
+survie.all.ages <- cbind(rep(yearsn,4), c(rep(1,length(yearsn)), rep(2,length(yearsn)),rep(3,length(yearsn)),rep(4,length(yearsn))),c(logit(survi1[13:47,2]),logit(survi2[13:47,2]),logit(survi3[13:47,3]),logit(survi4[13:47,2])),c(log(fec1[13:47,2]),log(fec2[13:47,2]),log(fec3[13:47,2]),log(fec4[13:47,2])),c(Nt[13:47,2] -  localN1[13:47,2] - localN2[13:47,2] - localN3[13:47,2] - localN4[13:47,2]),c(localN1[13:47,2] + localN2[13:47,2] + localN3[13:47,2] + localN4[13:47,2]), rep(dd_red_red[,1],4),rep(Nt[13:47,2]),rep(mismatchok,4),rep(dd_red_red_before[,1],4), c(survi1[13:47,4],survi2[13:47,4],survi3[13:47,4],survi4[13:47,4]),c(fec1[13:47,4],fec2[13:47,4],fec3[13:47,4],fec4[13:47,4]))  
+colnames(survie.all.ages)<-c("year","age","survival","recrut","immi","Nlocal","BCI","Ntotal","Mismatch", "BCIbefore","var_surv","var_fec") 
 row.names(survie.all.ages)<-c()
 survie.all.ages<-as.data.frame(survie.all.ages)
 A<-as.factor(survie.all.ages$age)
@@ -981,7 +1005,8 @@ MISM<-rep(MISM,4)
 year<-as.factor(survie.all.ages$year)
 Nl<-survie.all.ages$Nlocal[1:length(yearsn)]
 Nl<-Nl
-
+var_surv<-survie.all.ages$var_surv
+var_fec<-survie.all.ages$var_fec
 
 
 data=survie.all.ages
@@ -993,14 +1018,13 @@ data$A <- A
 
 
 
-## Survival  
-reg.S<- lme(survival ~ A + BEECH  + BEECH:A, data=data, random= ~ 1|year, method="REML", na.action=na.exclude)
+## Survival with weights
+reg.S<- lme(survival ~ A + BEECH  + BEECH:A, data=data, random= ~ 1|year, method="REML", weights=~var_surv, na.action=na.exclude)
+summary(reg.S)
 
-
-
-## Recruitment  
-reg.R<-lme(recrut ~ A + N + N:A + BEECH  + BEECH:A, data=data, random= ~ 1|year, method="REML", na.action=na.exclude)
-
+## Fec with weights
+reg.R<-lme(recrut ~ A + N + N:A + BEECH  + BEECH:A, data=data, random= ~ 1|year, method="REML", weights=~var_fec, na.action=na.exclude)
+summary(reg.R)
 
 
 
@@ -1195,8 +1219,8 @@ maxY <- 2019
 yearsn <- minY:maxY
 
 
-survie.all.ages <- cbind(rep(yearsn,4), c(rep(1,length(yearsn)), rep(2,length(yearsn)),rep(3,length(yearsn)),rep(4,length(yearsn))),c(logit(survi1[13:47,2]),logit(survi2[13:47,2]),logit(survi3[13:47,3]),logit(survi4[13:47,2])),c(log(fec1[13:47,2]),log(fec2[13:47,2]),log(fec3[13:47,2]),log(fec4[13:47,2])),c(Nt[13:47,2] -  localN1[13:47,2] - localN2[13:47,2] - localN3[13:47,2] - localN4[13:47,2]),c(localN1[13:47,2] + localN2[13:47,2] + localN3[13:47,2] + localN4[13:47,2]), rep(dd_red_red[,1],4),rep(Nt[13:47,2]),rep(mismatchok,4),rep(dd_red_red_before[,1],4)) 
-colnames(survie.all.ages)<-c("year","age","survival","recrut","immi","Nlocal","BCI","Ntotal","Mismatch", "BCIbefore") 
+survie.all.ages <- cbind(rep(yearsn,4), c(rep(1,length(yearsn)), rep(2,length(yearsn)),rep(3,length(yearsn)),rep(4,length(yearsn))),c(logit(survi1[13:47,2]),logit(survi2[13:47,2]),logit(survi3[13:47,3]),logit(survi4[13:47,2])),c(log(fec1[13:47,2]),log(fec2[13:47,2]),log(fec3[13:47,2]),log(fec4[13:47,2])),c(Nt[13:47,2] -  localN1[13:47,2] - localN2[13:47,2] - localN3[13:47,2] - localN4[13:47,2]),c(localN1[13:47,2] + localN2[13:47,2] + localN3[13:47,2] + localN4[13:47,2]), rep(dd_red_red[,1],4),rep(Nt[13:47,2]),rep(mismatchok,4),rep(dd_red_red_before[,1],4), c(survi1[13:47,4],survi2[13:47,4],survi3[13:47,4],survi4[13:47,4]),c(fec1[13:47,4],fec2[13:47,4],fec3[13:47,4],fec4[13:47,4]))  
+colnames(survie.all.ages)<-c("year","age","survival","recrut","immi","Nlocal","BCI","Ntotal","Mismatch", "BCIbefore","var_surv","var_fec") 
 row.names(survie.all.ages)<-c()
 survie.all.ages<-as.data.frame(survie.all.ages)
 A<-as.factor(survie.all.ages$age)
@@ -1211,7 +1235,8 @@ MISM<-rep(MISM,4)
 year<-as.factor(survie.all.ages$year)
 Nl<-survie.all.ages$Nlocal[1:length(yearsn)]
 Nl<-Nl
-
+var_surv<-survie.all.ages$var_surv
+var_fec<-survie.all.ages$var_fec
 
 
 data=survie.all.ages
@@ -1223,14 +1248,13 @@ data$A <- A
 
 
 
-## Survival  
-reg.S<- lme(survival ~ A + BEECH  + BEECH:A, data=data, random= ~ 1|year, method="REML", na.action=na.exclude)
+## Survival with weights
+reg.S<- lme(survival ~ A + BEECH  + BEECH:A, data=data, random= ~ 1|year, method="REML", weights=~var_surv, na.action=na.exclude)
+summary(reg.S)
 
-
-
-## Recruitment  
-reg.R<-lme(recrut ~ A + N + N:A + BEECH  + BEECH:A, data=data, random= ~ 1|year, method="REML", na.action=na.exclude)
-
+## Fec with weights
+reg.R<-lme(recrut ~ A + N + N:A + BEECH  + BEECH:A, data=data, random= ~ 1|year, method="REML", weights=~var_fec, na.action=na.exclude)
+summary(reg.R)
 
 
 
